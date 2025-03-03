@@ -152,6 +152,7 @@ def get_channel_handlers():
             CallbackQueryHandler(channel_menu, pattern=r"^channel_menu$")
         ],
         name="add_channel",
+        per_message=True  # اضافه کردن این پارامتر
     )
 
     return [
