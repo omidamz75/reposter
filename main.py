@@ -1,6 +1,6 @@
 from telegram.ext import Application, CommandHandler
 from config import Config
-from core.logger import setup_logging
+from core import setup_logging
 
 # Setup logging
 logger = setup_logging()
