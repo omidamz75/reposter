@@ -140,24 +140,37 @@ async def show_channel_stats(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 def get_channel_handlers():
     """Return all handlers related to channel management"""
-    add_channel_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(start_add_channel, pattern=r"^channel_add$")],
+    # Regular handlers
+    channel_handlers = [
+        CommandHandler("channels", channel_menu),
+        CallbackQueryHandler(show_channel_stats, pattern=r"^channel_stats_\d+$"),
+        CallbackQueryHandler(handle_channel_callback, pattern=r"^channel_(?!add|stats_)\w+$")
+    ]
+
+    # Separate conversation handler for adding channels
+    forward_handler = ConversationHandler(
+        entry_points=[CommandHandler("add_channel", start_add_channel)],
         states={
             AWAIT_CHANNEL_FORWARD: [
                 MessageHandler(filters.FORWARDED & filters.ChatType.CHANNEL, handle_channel_forward)
             ],
         },
-        fallbacks=[
-            CommandHandler("cancel", cancel_add_channel),
-            CallbackQueryHandler(channel_menu, pattern=r"^channel_menu$")
-        ],
-        name="add_channel",
-        per_message=True  # اضافه کردن این پارامتر
+        fallbacks=[CommandHandler("cancel", cancel_add_channel)],
+        name="add_channel_forward"
     )
 
-    return [
-        CommandHandler("channels", channel_menu),
-        add_channel_handler,
-        CallbackQueryHandler(show_channel_stats, pattern=r"^channel_stats_\d+$"),
-        CallbackQueryHandler(handle_channel_callback, pattern=r"^channel_(?!add|stats_)\w+$")
-    ]
+    # Conversation handler for inline menu
+    menu_handler = ConversationHandler(
+        entry_points=[CallbackQueryHandler(start_add_channel, pattern=r"^channel_add$")],
+        states={
+            AWAIT_CHANNEL_FORWARD: [
+                CallbackQueryHandler(channel_menu, pattern=r"^channel_menu$")
+            ],
+        },
+        fallbacks=[CallbackQueryHandler(channel_menu, pattern=r"^channel_menu$")],
+        name="add_channel_menu",
+        per_message=True
+    )
+
+    channel_handlers.extend([forward_handler, menu_handler])
+    return channel_handlers
