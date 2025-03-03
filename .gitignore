@@ -26,7 +26,11 @@ logs/
 .vscode/
 *.swp
 *.swo
+*.code-workspace
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Data directory
+data/

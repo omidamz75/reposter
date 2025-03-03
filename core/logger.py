@@ -3,7 +3,11 @@ from pathlib import Path
 from loguru import logger
 from config import Config
 
-def setup_logging():
+def setup_logging(name: str = None):
+    """Setup logging configuration
+    Args:
+        name: Optional module name for specific loggers
+    """
     # Create logs directory if it doesn't exist
     Path(Config.LOG_DIR).mkdir(exist_ok=True)
     
@@ -18,9 +22,10 @@ def setup_logging():
         colorize=True
     )
     
-    # Add file logger
+    # Add file logger with module name if provided
+    log_file = f"{Config.LOG_DIR}/{'module.' + name if name else 'bot'}.log"
     logger.add(
-        f"{Config.LOG_DIR}/bot.log",
+        log_file,
         format=Config.LOG_FORMAT,
         level=Config.LOG_LEVEL,
         rotation="1 day",

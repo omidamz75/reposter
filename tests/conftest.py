@@ -19,6 +19,7 @@ def mock_chat():
 
 @pytest.fixture
 def mock_message(mock_user, mock_chat):
+    """Create a mock message"""
     message = Mock()
     message.message_id = 1
     message.date = 1632152433
@@ -26,14 +27,17 @@ def mock_message(mock_user, mock_chat):
     message.from_user = mock_user
     message.text = "/start"
     message.reply_text = AsyncMock()
+    message.edit_text = AsyncMock()
     return message
 
 @pytest.fixture
 def mock_update(mock_user, mock_chat, mock_message):
+    """Create a mock update"""
     update = Mock(spec=Update)
     update.effective_user = mock_user
     update.effective_chat = mock_chat
     update.message = mock_message
+    update.callback_query = None
     return update
 
 @pytest.fixture
