@@ -1,8 +1,10 @@
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application
 from config import Config
 from core import setup_logging
-from modules.users.handlers import get_user_handlers
 from core.database import Base, engine
+from modules.base import get_base_handlers
+from modules.users.handlers import get_user_handlers
+from modules.channels.handlers import get_channel_handlers
 
 # Setup database
 Base.metadata.create_all(bind=engine)
@@ -10,36 +12,31 @@ Base.metadata.create_all(bind=engine)
 # Setup logging
 logger = setup_logging()
 
-async def start_handler(update, context):
-    user_name = update.effective_user.first_name
-    await update.message.reply_text(f"سلام {user_name}! به ربات ریپوستر خوش آمدید.")
-
 def main():
     try:
         logger.info("Starting bot...")
         
         # Create application
         application = Application.builder().token(Config.BOT_TOKEN).build()
-        
-        # Store admin_id in bot_data
         application.bot_data["admin_id"] = Config.ADMIN_ID
         
-        # Add handlers
-        application.add_handler(CommandHandler("start", start_handler))
+        # Add handlers in order of priority
+        handler_groups = [
+            get_base_handlers(),      # Basic commands
+            get_user_handlers(),      # User management
+            get_channel_handlers(),   # Channel management
+        ]
         
-        # Add user management handlers
-        for handler in get_user_handlers():
-            application.add_handler(handler)
+        for handlers in handler_groups:
+            for handler in handlers:
+                application.add_handler(handler)
         
-        # Log successful initialization
         logger.info("Bot initialized successfully!")
-        
-        # Start bot
         application.run_polling()
         
     except Exception as e:
         logger.error(f"Error starting bot: {str(e)}")
         raise
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()

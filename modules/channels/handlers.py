@@ -144,7 +144,7 @@ def get_channel_handlers():
         entry_points=[CallbackQueryHandler(start_add_channel, pattern=r"^channel_add$")],
         states={
             AWAIT_CHANNEL_FORWARD: [
-                MessageHandler(filters.FORWARDED & filters.Chat(type="channel"), handle_channel_forward)
+                MessageHandler(filters.FORWARDED & filters.ChatType.CHANNEL, handle_channel_forward)
             ],
         },
         fallbacks=[
